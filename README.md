@@ -5,9 +5,9 @@ This repo simulate a bare metal UPI setup of OpenShift, in OpenStack.
 # Overall setup
 ![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/docs/ocp-pxe.png)
 
-## Hosts port
+## Hosts IP
 
-| Hosts | Port |
+| Hosts | IP |
 |---------|:----:|
 | bootstrap | 192.168.1.10 |
 | master-0  | 192.168.1.100 |
