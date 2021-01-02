@@ -1,0 +1,59 @@
+
+## CHANGE ME ##########################
+
+EXT_IP=10.195.197.105
+
+DOMAIN=adetalhouet.io.
+CLUSTER_NAME=ocp
+DNS_DOMAIN=$CLUSTER_NAME.$DOMAIN
+
+#######################################
+
+
+
+# ref: https://docs.openshift.com/container-platform/4.6/installing/installing_bare_metal/installing-bare-metal.html#installation-dns-user-infra_installing-bare-metal
+OCP_ZONE=$(openstack zone create --email adetalhouet89@gmail.com $DNS_DOMAIN |  awk '$2=="id" {print $4}')
+openstack recordset create --type A --records $EXT_IP --ttl 3600 $OCP_ZONE *.apps.$DNS_DOMAIN
+openstack recordset create --type A --records $EXT_IP --ttl 3600 $OCP_ZONE api.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.100 --ttl 3600 $OCP_ZONE etcd-0.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.101 --ttl 3600 $OCP_ZONE etcd-1.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.102 --ttl 3600 $OCP_ZONE etcd-2.$DNS_DOMAIN
+openstack recordset create --type SRV --records "10 0 2380 etcd-0.$DNS_DOMAIN" "10 0 2380 etcd-1.$DNS_DOMAIN" "10 0 2380 etcd-2.$DNS_DOMAIN" --ttl 3600 $OCP_ZONE _etcd-server-ssl._tcp.ocp.adetalhouet.io.
+openstack recordset create --type A --records 192.168.1.10 --ttl 3600 $OCP_ZONE boostrap.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.100 --ttl 3600 $OCP_ZONE master-0.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.101 --ttl 3600 $OCP_ZONE master-1.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.102 --ttl 3600 $OCP_ZONE master-2.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.200 --ttl 3600 $OCP_ZONE worker-0.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.201 --ttl 3600 $OCP_ZONE worker-1.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.202 --ttl 3600 $OCP_ZONE worker-2.$DNS_DOMAIN
+
+### Reverse zone for Red Hat Enterprise Linux CoreOS (RHCOS) that uses the reverse records to set the host name for all the nodes
+OCP_REVERSE_ZONE=$(openstack zone create --email adetalhouet89@gmail.com 1.168.192.in-addr.arpa. |  awk '$2=="id" {print $4}')
+openstack recordset create --type PTR --records boostrap.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 10.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records master-0.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 100.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records master-1.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 101.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records master-2.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 102.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records worker-0.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 200.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records worker-1.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 201.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records worker-2.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 202.1.168.192.in-addr.arpa.
+
+
+# Host port
+openstack port create openshift.bootstrap  --network pxe_net --security-group  842acf09-0d63-4cf6-9d5a-774cb5ecf7ac  --fixed-ip subnet=pxe_subnet,ip-address=192.168.1.10
+openstack port create openshift.master-0   --network pxe_net --security-group  842acf09-0d63-4cf6-9d5a-774cb5ecf7ac  --fixed-ip subnet=pxe_subnet,ip-address=192.168.1.100
+openstack port create openshift.master-1   --network pxe_net --security-group  842acf09-0d63-4cf6-9d5a-774cb5ecf7ac  --fixed-ip subnet=pxe_subnet,ip-address=192.168.1.101
+openstack port create openshift.master-2   --network pxe_net --security-group  842acf09-0d63-4cf6-9d5a-774cb5ecf7ac  --fixed-ip subnet=pxe_subnet,ip-address=192.168.1.102
+openstack port create openshift.worker-0   --network pxe_net --security-group  842acf09-0d63-4cf6-9d5a-774cb5ecf7ac  --fixed-ip subnet=pxe_subnet,ip-address=192.168.1.200
+openstack port create openshift.worker-1   --network pxe_net --security-group  842acf09-0d63-4cf6-9d5a-774cb5ecf7ac  --fixed-ip subnet=pxe_subnet,ip-address=192.168.1.201
+openstack port create openshift.worker-2   --network pxe_net --security-group  842acf09-0d63-4cf6-9d5a-774cb5ecf7ac  --fixed-ip subnet=pxe_subnet,ip-address=192.168.1.202
+
+
+openstack server create --image pxeboot --flavor m1.openshift --key-name adetalhouet --port openshift.bootstrap bootstrap.$DNS_DOMAIN
+
+for i in {0..2}; do
+    openstack server create --image pxeboot --flavor m1.openshift --key-name adetalhouet --port openshift.master-${i} master-${i}.$DNS_DOMAIN
+done
+
+for i in {0..2}; do
+    openstack server create --image pxeboot --flavor m1.openshift --key-name adetalhouet --port openshift.worker-${i} worker-${i}.$DNS_DOMAIN
+done
