@@ -1,25 +1,40 @@
-# Bastion setup
+#!/bin/bash
 
-## CHANGE ME ##########################
+## EDIT THE BELLOW PROPS TO MATCH YOUR ENV AND DESIRED SETUP
 
-OCP_RELEASE_PATH=ocp
-OCP_SUBRELEASE=4.6.9
-RHCOS_RELEASE=4.6
-WEBROOT=/usr/share/nginx/html/
+OCP_RELEASE_PATH=ocp # https://mirror.openshift.com/pub/openshift-v4/clients/
+OCP_SUBRELEASE=4.6.9 # https://mirror.openshift.com/pub/openshift-v4/clients/ocp/
+RHCOS_RELEASE=4.6 # https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/
+
 OCP_WORK_DIR=ocp-pxe
 
+EXT_IP=10.195.197.105
+DNS_SERVER=10.195.194.16
+
+DOMAIN=pxe.test.io.
+CLUSTER_NAME=ocp
+
 #######################################
+
+WEBROOT=/usr/share/nginx/html/
+DNS_DOMAIN=$CLUSTER_NAME.$DOMAIN
 
 ## Install dependencies
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 yum -y install git
 
 ## Clone repo with config
-git clone 
+git clone https://github.com/adetalhouet/ocp-pxe.git
+
+## Set pxeboot image
+./ocp-pxe/pxeboot-image.sh
+
+## Setup OpenStack - DNS and Network
+./ocp-pxe/openstack-setup.sh
 
 ## Setup DHCP and DNS
 yum -y install dnsmasq
-cp $HOME/ocp-pxe/dnsmasq-pxe.cfg /etc/dnsmasq.d/dnsmasq-pxe.conf
+cp $HOME/ocp-pxe/dnsmasq-pxe.conf /etc/dnsmasq.d/dnsmasq-pxe.conf
 systemctl start dnsmasq
 systemctl enable dnsmasq
 
@@ -47,7 +62,6 @@ systemctl start haproxy
 systemctl enable haproxy
 
 # OpenShift images setup
-
 mkdir $WEBROOT/rhcos/
 cd $WEBROOT/rhcos
 curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-live-initramfs.x86_64.img
