@@ -3,7 +3,7 @@
 This repo simulate a bare metal UPI setup of OpenShift, in OpenStack.
 
 # Overall setup
-![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/docs/ocp-pxe.png)
+![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/ocp-pxe.png)
 
 ## Hosts IP
 
