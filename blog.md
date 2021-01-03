@@ -6,11 +6,11 @@ For this recipe, we will use the OpenStack CLI for most of the provisioning.
 1. [Pre-requisites](#prerequisites)
 2. [Architecture](#architecture)
 3. [Setup](#setup)
-	a. [PXE Boot image](#pxebootimage)
-	b. [API GW](#apigw)
-	c. [DNS Zones](#dnszones)
-	d. [PXE Network](#pxenetwork)
-	e. [Bastion](#bastion)
+	- [PXE Boot image](#pxebootimage)
+	- [API GW](#apigw)
+	- [DNS Zones](#dnszones)
+	- [PXE Network](#pxenetwork)
+	- [Bastion](#bastion)
 
 
 ## Pre-requisites <a name="prerequisites"></a>
