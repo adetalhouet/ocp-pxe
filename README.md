@@ -28,7 +28,7 @@ The External network is used to assign a Floating IP to the Load Balancer acting
 - Networks
 	- Management network
 		- name `vlan197_net`
-		- subnet `vlan192_subnet`
+		- subnet `vlan197_subnet`
 		- CIDR `10.195.197.0/24`
 	- External network
 		- name  `vlan200_net`
@@ -308,18 +308,18 @@ MENU TITLE PXE BOOT MENU
 
 LABEL WORKER
   MENU LABEL ^1 WORKER
-  KERNEL http://192.168.1.125:8080/rhcos/rhcos-kernel
-  APPEND rd.neednet=1 initrd=http://192.168.1.125:8080/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125:8080/ignition/worker.ign coreos.live.rootfs_url=http://192.168.1.125:8080/rhcos/rhcos-live-rootfs ip=dhcp
+  KERNEL http://192.168.1.125/rhcos/rhcos-kernel
+  APPEND rd.neednet=1 initrd=http://192.168.1.125/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125/ignition/worker.ign coreos.live.rootfs_url=http://192.168.1.125/rhcos/rhcos-live-rootfs ip=dhcp
 
 LABEL MASTER
   MENU LABEL ^2 MASTER
-  KERNEL http://192.168.1.125:8080/rhcos/rhcos-kernel
-  APPEND rd.neednet=1 initrd=http://192.168.1.125:8080/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125:8080/ignition/master.ign coreos.live.rootfs_url=http://192.168.1.125:8080/rhcos/rhcos-live-rootfs ip=dhcp
+  KERNEL http://192.168.1.125/rhcos/rhcos-kernel
+  APPEND rd.neednet=1 initrd=http://192.168.1.125/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125/ignition/master.ign coreos.live.rootfs_url=http://192.168.1.125/rhcos/rhcos-live-rootfs ip=dhcp
 
 LABEL BOOTSTRAP
   MENU LABEL ^3 BOOTSTRAP
-  KERNEL http://192.168.1.125:8080/rhcos/rhcos-kernel
-  APPEND rd.neednet=1 initrd=http://192.168.1.125:8080/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125:8080/ignition/bootstrap.ign coreos.live.rootfs_url=http://192.168.1.125:8080/rhcos/rhcos-live-rootfs ip=dhcp
+  KERNEL http://192.168.1.125/rhcos/rhcos-kernel
+  APPEND rd.neednet=1 initrd=http://192.168.1.125/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125/ignition/bootstrap.ign coreos.live.rootfs_url=http://192.168.1.125/rhcos/rhcos-live-rootfs ip=dhcp
 ```
 </details>
 
@@ -335,7 +335,7 @@ sudo systemctl enable tftp
 ~~~
 ##### Setup PXE DHCP server
 It needs to be configured as below. If you adjust some of the pre-requisite, or the PXE network setup, make sure to accordingly update the config.
-Regardless, you need to edits the port MAC address. To do so, retrieve the ports and their MAC, and update below accordingly.
+Regardless, you need to edit the port MAC address. To do so, retrieve the ports and their MAC, and update below accordingly.
 
 <details>
 <summary>openstack port list --network pxe_net</summary>
@@ -499,7 +499,7 @@ From the host that has the OpenStack CLI access,
 openstack server create --image pxeboot --flavor m1.openshift --key-name adetalhouet --port openshift.bootstrap bootstrap
 ~~~
 From the instance console, from the OpenStack UI, select `BOOSTRAP` option.
-![pxeboot](https://github.com/adetalhouet/ocp-pxe/raw/master/images/pxeboot-boostrap.png)
+![pxeboot](https://github.com/adetalhouet/ocp-pxe/raw/master/images/pxeboot-bootstrap.png)
 
 Then, from the Bastion host, wait until the API is up. Use the below command to monitor the progress
 ~~~
