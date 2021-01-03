@@ -480,7 +480,7 @@ sudo mkdir /usr/share/nginx/html/ignition/
 sudo cp ocp-pxe/*.ign /usr/share/nginx/html/ignition/
 sudo chmod 644 /usr/share/nginx/html/ignition/*
 ~~~
-### Deploy the Boostrap node <a name="boostrap"></a>
+### Deploy the Boostrap node <a name="bootstrap"></a>
 From the host that has the OpenStack CLI access,
 ~~~
 openstack server create --image pxeboot --flavor m1.openshift --key-name adetalhouet --port openshift.bootstrap bootstrap
