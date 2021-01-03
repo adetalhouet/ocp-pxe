@@ -1,4 +1,9 @@
 #!/bin/bash
+ 
+OCP_RELEASE_PATH=ocp # https://mirror.openshift.com/pub/openshift-v4/clients/
+OCP_SUBRELEASE=4.6.9 # https://mirror.openshift.com/pub/openshift-v4/clients/ocp/
+RHCOS_RELEASE=4.6 # https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/
+WEBROOT=/usr/share/nginx/html/
 
 ## Install dependencies
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
@@ -33,19 +38,18 @@ systemctl start nginx
 systemctl enable nginx
 
 # OpenShift images setup
-mkdir $WEBROOT/rhcos/
-cd $WEBROOT/rhcos
-curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-live-initramfs.x86_64.img
-curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-live-kernel-x86_64
-curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-live-rootfs.x86_64.img
-curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-openstack.x86_64.qcow2.gz
-gunzip rhcos-openstack.x86_64.qcow2.gz
+sudo mkdir /usr/share/nginx/html/rhcos/
+sudo curl https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-live-initramfs.x86_64.img -o /usr/share/nginx/html/rhcos/rhcos-initramfs.img
+sudo curl https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-live-kernel-x86_64 -o /usr/share/nginx/html/rhcos/rhcos-kernel
+sudo curl https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-live-rootfs.x86_64.img -o /usr/share/nginx/html/rhcos/rhcos-live-rootfs
+sudo curl https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-openstack.x86_64.qcow2.gz -o /usr/share/nginx/html/rhcos/rhcos-openstack.x86_64.qcow2.gz
+sudo gunzip /usr/share/nginx/html/rhcos/rhcos-openstack.x86_64.qcow2.gz
 
-cd $HOME/
 curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/clients/${OCP_RELEASE_PATH}/${OCP_SUBRELEASE}/openshift-client-linux-${OCP_SUBRELEASE}.tar.gz 
 curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/clients/${OCP_RELEASE_PATH}/${OCP_SUBRELEASE}/openshift-install-linux-${OCP_SUBRELEASE}.tar.gz
 tar -xvf openshift-install-linux-${OCP_SUBRELEASE}.tar.gz
 tar -xvf openshift-client-linux-${OCP_SUBRELEASE}.tar.gz
+rm openshift-*-linux* README.md
 
 # OpenShift ignition file setup
 
