@@ -4,6 +4,7 @@ Below is the recipe to deploy an OpenShift cluster using PXE boot, for baremetal
 For this recipe, we will use the OpenStack CLI for most of the provisioning.
 
 
+
 1. [Pre-requisites](#prerequisites)
 2. [Architecture](#architecture)
 3. [Setup](#setup)
@@ -17,8 +18,6 @@ For this recipe, we will use the OpenStack CLI for most of the provisioning.
 	- [Deploy Boostrap host](#bootstrap)
 	- [Deploy Master hosts](#master)
 	- [Deploy Worker hosts](#worker)
-	
-
 
 ## Pre-requisites <a name="prerequisites"></a>
 You can adjust the below information as required.
@@ -425,8 +424,8 @@ Now, let's start the web server
 sudo systemctl start nginx
 sudo systemctl enable nginx
 ~~~
-## Deploy OpenShift Cluster
-### Prepare Ignition files
+## Deploy OpenShift Cluster <a name="deployocp"></a>
+### Prepare Ignition files <a name="ignition"></a>
 In order to do so, we need to build the `install-config.yaml` file.
 Make sure the `baseDomain` and the `metadata.name` (cluster name) match the information provided during the DNS setup.
 Also, ensure to modify the `pull-secret` with yours.
@@ -481,7 +480,7 @@ sudo mkdir /usr/share/nginx/html/ignition/
 sudo cp ocp-pxe/*.ign /usr/share/nginx/html/ignition/
 sudo chmod 644 /usr/share/nginx/html/ignition/*
 ~~~
-### Deploy the Boostrap node
+### Deploy the Boostrap node <a name="boostrap"></a>
 From the host that has the OpenStack CLI access,
 ~~~
 openstack server create --image pxeboot --flavor m1.openshift --key-name adetalhouet --port openshift.bootstrap bootstrap
@@ -499,7 +498,7 @@ INFO API v1.19.0+7070803 up
 INFO Waiting up to 30m0s for bootstrapping to complete...
 ~~~
 At this point, you can decomision the boostrap host.
-### Deploy the Master nodes
+### Deploy the Master nodes <a name="master"></a>
 From the host that has the OpenStack CLI access,
 ~~~
 for i in {0..2}; do
@@ -523,7 +522,7 @@ DEBUG Bootstrap Complete: 3m59s
 INFO Time elapsed: 3m59s
 ~~~
 We can now deploy the Worker nodes
-### Deploy the Worker nodes
+### Deploy the Worker nodes <a name="worker"></a>
 From the host that has the OpenStack CLI access,
 ~~~
 for i in {0..2}; do
