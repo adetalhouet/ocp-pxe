@@ -42,7 +42,19 @@ The External network is used to assign a Floating IP to the Load Balancer acting
 		- If you don't have Designate, you could deploy a DNS solution, such as `dnsmasq` and achieve the same. Make sure to adjust the IP address where necessary.
 
 ## Overall architecture <a name="architecture"></a>
-![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/ocp-pxe-bog.png)
+![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/ocp-pxe-blog.png)
+
+### Hosts
+| Hosts | IP |
+|---------|:----:|
+| api-gw | 192.168.1.10 |
+| bootstrap | 192.168.1.20 |
+| master-0  | 192.168.1.100 |
+| master-1   | 192.168.1.101 |
+| master-2 | 192.168.1.102 |
+| worker-0  | 192.168.1.200 |
+| worker-1   | 192.168.1.201 |
+| worker-2 | 192.168.1.202 |
 ## Setup <a name="setup"></a>
 ### PXE Boot image <a name="pxebootimage"></a>
 Create a small empty disk file, create dos filesystem.
