@@ -42,7 +42,7 @@ The External network is used to assign a Floating IP to the Load Balancer acting
 		- If you don't have Designate, you could deploy a DNS solution, such as `dnsmasq` and achieve the same. Make sure to adjust the IP address where necessary.
 
 ## Overall architecture <a name="architecture"></a>
-![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/images/ocp-pxe-blog.png)
+![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/images/ocp-pxe-blog2.png)
 
 ### Hosts
 | Hosts | IP |
