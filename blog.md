@@ -2,7 +2,18 @@
 Below is the recipe to deploy an OpenShift cluster using PXE boot, for baremetal environment. But in this case, we will simulate baremetal with VM in OpenStack.
 For this recipe, we will use the OpenStack CLI for most of the provisioning.
 
-## Prerequisites
+
+1. [Pre-requisites](#prerequisites)
+2. [Architecture](#architecture)
+3. [Setup](#setup)
+	a. [PXE Boot image](#pxebootimage)
+	b. [API GW](#apigw)
+	c. [DNS Zones](#dnszones)
+	d. [PXE Network](#pxenetwork)
+	e. [Bastion](#bastion)
+
+
+## Pre-requisites <a name="prerequisites"></a>
 You can adjust the below information as required.
 
 The External network is used to assign a Floating IP to the Load Balancer acting as the cluster API gateway.
@@ -24,11 +35,75 @@ The External network is used to assign a Floating IP to the Load Balancer acting
 		- IP `10.195.194.16`
 		- If you don't have Designate, you could deploy a DNS solution, such as `dnsmasq` and achieve the same. Make sure to adjust the IP address where necessary.
 
-## Overall architecture
-![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/ocp-pxe-blog.png)
+## Overall architecture <a name="architecture"></a>
+![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/ocp-pxe.png)
+## Setup <a name="setup"></a>
+### PXE Boot image <a name="pxebootimage"></a>
+Create a small empty disk file, create dos filesystem.
+~~~
+dd if=/dev/zero of=pxeboot.img bs=1M count=4
+mkdosfs pxeboot.img
+~~~
+Make it bootable by syslinux
+~~~
+losetup /dev/loop0 pxeboot.img
+syslinux --install /dev/loop0
+mount /dev/loop0 /mnt
+~~~
+Install iPXE kernel and make sysliux.cfg to load it at bootup
+~~~
+wget http://boot.ipxe.org/ipxe.iso
+mount -o loop ipxe.iso /media
+cp /media/ipxe.krn /mnt
+cat > /mnt/syslinux.cfg <<EOF
+DEFAULT ipxe
+LABEL ipxe
+ KERNEL ipxe.krn
+EOF
+umount /media/
+umount /mnt
+~~~
+Create the image in OpenStack
+~~~
+openstack image create --disk-format raw --container-format bare --public --file pxeboot.img pxeboot
+~~~
+### API GW <a name="apigw"></a>
+### DNS Zones <a name="dnszones"></a>
+#### Forward Zone
+~~~
+DOMAIN=pxe.test.io.
+CLUSTER_NAME=ocp
+EXT_IP=10.195.197.105
 
-## Setup
-### PXE Network
+## DNS ZONE
+OCP_ZONE=$(openstack zone create --email adetalhouet89@gmail.com $DNS_DOMAIN |  awk '$2=="id" {print $4}')
+openstack recordset create --type A --records $EXT_IP --ttl 3600 $OCP_ZONE *.apps.$DNS_DOMAIN
+openstack recordset create --type A --records $EXT_IP --ttl 3600 $OCP_ZONE api.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.100 --ttl 3600 $OCP_ZONE etcd-0.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.101 --ttl 3600 $OCP_ZONE etcd-1.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.102 --ttl 3600 $OCP_ZONE etcd-2.$DNS_DOMAIN
+openstack recordset create --type SRV --records "10 0 2380 etcd-0.$DNS_DOMAIN" "10 0 2380 etcd-1.$DNS_DOMAIN" "10 0 2380 etcd-2.$DNS_DOMAIN" --ttl 3600 $OCP_ZONE _etcd-server-ssl._tcp.ocp.adetalhouet.io.
+openstack recordset create --type A --records 192.168.1.10 --ttl 3600 $OCP_ZONE boostrap.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.100 --ttl 3600 $OCP_ZONE master-0.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.101 --ttl 3600 $OCP_ZONE master-1.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.102 --ttl 3600 $OCP_ZONE master-2.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.200 --ttl 3600 $OCP_ZONE worker-0.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.201 --ttl 3600 $OCP_ZONE worker-1.$DNS_DOMAIN
+openstack recordset create --type A --records 192.168.1.202 --ttl 3600 $OCP_ZONE worker-2.$DNS_DOMAIN
+~~~
+#### Reverse Zone
+DNS Reverse zone for Red Hat Enterprise Linux CoreOS (RHCOS) that uses the reverse records to set the host name for all the nodes
+~~~
+OCP_REVERSE_ZONE=$(openstack zone create --email adetalhouet89@gmail.com 1.168.192.in-addr.arpa. |  awk '$2=="id" {print $4}')
+openstack recordset create --type PTR --records boostrap.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 10.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records master-0.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 100.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records master-1.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 101.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records master-2.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 102.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records worker-0.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 200.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records worker-1.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 201.1.168.192.in-addr.arpa.
+openstack recordset create --type PTR --records worker-2.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 202.1.168.192.in-addr.arpa.
+~~~
+### PXE Network <a name="pxenetwork"></a>
 #### Create the network and the subnet
 This private network will be use boot the hosts from a PXE server. It will then serve as internal network for the OpenShift cluster networking.
 ~~~
@@ -57,7 +132,7 @@ openstack port create openshift.worker-1   --network pxe_net --fixed-ip subnet=p
 openstack port create openshift.worker-2   --network pxe_net --fixed-ip subnet=pxe_subnet,ip-address=192.168.1.202
 ~~~
 
-### Bastion host
+### Bastion host <a name="bastion"></a>
 #### Create the instance
 Bastion has an interface in the PXE network, setup with the static port create previously, and an interface in the Management network.
 ~~~
