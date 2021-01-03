@@ -42,7 +42,7 @@ The External network is used to assign a Floating IP to the Load Balancer acting
 		- If you don't have Designate, you could deploy a DNS solution, such as `dnsmasq` and achieve the same. Make sure to adjust the IP address where necessary.
 
 ## Overall architecture <a name="architecture"></a>
-![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/ocp-pxe-blog.png)
+![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/images/ocp-pxe-blog.png)
 
 ### Hosts
 | Hosts | IP |
@@ -499,7 +499,7 @@ From the host that has the OpenStack CLI access,
 openstack server create --image pxeboot --flavor m1.openshift --key-name adetalhouet --port openshift.bootstrap bootstrap
 ~~~
 From the instance console, from the OpenStack UI, select `BOOSTRAP` option.
-![pxeboot](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/pxeboot-boostrap.png)
+![pxeboot](https://github.com/adetalhouet/ocp-pxe/raw/master/images/pxeboot-boostrap.png)
 
 Then, from the Bastion host, wait until the API is up. Use the below command to monitor the progress
 ~~~
@@ -519,7 +519,7 @@ for i in {0..2}; do
 done
 ~~~
 From the instances console, from the OpenStack UI, select `MASTER` option.
-![pxeboot](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/pxeboot-master.png)
+![pxeboot](https://github.com/adetalhouet/ocp-pxe/raw/master/images/pxeboot-master.png)
 Back on the Bastion host, you should have the following after couple of minutes
 ~~~
 ./openshift-install wait-for bootstrap-complete --dir=$WORKDIR/ --log-level debug
@@ -543,7 +543,7 @@ for i in {0..2}; do
 done
 ~~~
 From the instance console, from the OpenStack UI, select `WORKER` option.
-![pxeboot](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/pxeboot-worker.png)
+![pxeboot](https://github.com/adetalhouet/ocp-pxe/raw/master/images/pxeboot-worker.png)
 For the Worker nodes, there is a certificate signing process, which means we have to approve the issued CSR.
 To do so, first, export the `KUBECONFIG` to have CLI access to the cluster
 ~~~
@@ -591,4 +591,4 @@ Get your `Kubeadmin` password using this command
 ~~~
  cat $WORKDIR/auth/kubeadmin-password
  ~~~
- ![ui](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/ui.png)
+ ![ui](https://github.com/adetalhouet/ocp-pxe/raw/master/images/ui.png)
