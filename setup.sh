@@ -19,10 +19,6 @@ CLUSTER_NAME=ocp
 WEBROOT=/usr/share/nginx/html/
 DNS_DOMAIN=$CLUSTER_NAME.$DOMAIN
 
-## Install dependencies
-yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-yum -y install git
-
 ## Clone repo with config
 git clone https://github.com/adetalhouet/ocp-pxe.git
 
@@ -32,58 +28,9 @@ git clone https://github.com/adetalhouet/ocp-pxe.git
 ## Setup OpenStack - DNS and Network
 ./ocp-pxe/openstack-setup.sh
 
-## Setup DHCP and DNS
-yum -y install dnsmasq
-cp $HOME/ocp-pxe/dnsmasq-pxe.conf /etc/dnsmasq.d/dnsmasq-pxe.conf
-systemctl start dnsmasq
-systemctl enable dnsmasq
-
-## Setup TFTP Server
-yum -y install tftp-server syslinux
-cp -r /usr/share/syslinux/* /var/lib/tftpboot
-mkdir /var/lib/tftpboot/pxelinux.cfg
-cp $HOME/ocp-pxe/pxelinux.0 /var/lib/tftpboot/pxelinux.cfg/default
-systemctl start tftp
-systemctl enable tftp
-
-## Setup HAProxy - LB
-yum -y install haproxy
-cp haproxy.cfg /etc/haproxy/haproxy.cfg
-echo "net.ipv4.conf.default.rp_filter = 2" >> /etc/sysctl.conf 
-echo "net.ipv4.conf.all.rp_filter = 2" >> /etc/sysctl.conf 
-echo 2 > /proc/sys/net/ipv4/conf/default/rp_filter
-echo 2 > /proc/sys/net/ipv4/conf/all/rp_filter
-systemctl start haproxy
-systemctl enable haproxy
-
-## Setup HTTP server
-yum -y install nginx
-systemctl start haproxy
-systemctl enable haproxy
-
-# OpenShift images setup
-mkdir $WEBROOT/rhcos/
-cd $WEBROOT/rhcos
-curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-live-initramfs.x86_64.img
-curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-live-kernel-x86_64
-curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-live-rootfs.x86_64.img
-curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS_RELEASE}/latest/rhcos-openstack.x86_64.qcow2.gz
-gunzip rhcos-openstack.x86_64.qcow2.gz
-
-cd $HOME/
-curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/clients/${OCP_RELEASE_PATH}/${OCP_SUBRELEASE}/openshift-client-linux-${OCP_SUBRELEASE}.tar.gz 
-curl -J -L -O https://mirror.openshift.com/pub/openshift-v4/clients/${OCP_RELEASE_PATH}/${OCP_SUBRELEASE}/openshift-install-linux-${OCP_SUBRELEASE}.tar.gz
-tar -xvf openshift-install-linux-${OCP_SUBRELEASE}.tar.gz
-tar -xvf openshift-client-linux-${OCP_SUBRELEASE}.tar.gz
-
-# OpenShift ignition file setup
-
-mkdir $OCP_WORK_DIR
-cp $HOME/ocp-pxe/install-config.yaml $OCP_WORK_DIR
-./openshift-install create ignition-configs --dir=$OCP_WORK_DIR
-
-mkdir $WEBROOT/ignition/
-cp $OCP_WORK_DIR/*.ign $WEBROOT/ignition/
+## Create Bastion
+openstack port create openshift.bastion  --network pxe_net --fixed-ip subnet=pxe_subnet,ip-address=192.168.1.126
+openstack server create --image centos8 --flavor m1.medium --key-name adetalhouet --port openshift.bastion bastion
 
 #export KUBECONFIG=${POCDIR}/auth/kubeconfig
 #./oc get csr

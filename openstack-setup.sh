@@ -30,7 +30,7 @@ openstack recordset create --type PTR --records worker-1.$DNS_DOMAIN --ttl 3600 
 openstack recordset create --type PTR --records worker-2.$DNS_DOMAIN --ttl 3600 $OCP_REVERSE_ZONE 202.1.168.192.in-addr.arpa.
 
 # Network config #######################################
-openstack network create --disable-port-security pxe_net1
+openstack network create --disable-port-security pxe_net
 openstack subnet create --network pxe_net --dns-nameserver 10.195.194.16 --subnet-range 192.168.1.0/24 pxe_subnet
 
 BOOTSTRAP_MAC=(openstack port create openshift.bootstrap  --network pxe_net --fixed-ip subnet=pxe_subnet,ip-address=192.168.1.10 | awk '$2=="mac_address" {print $4}')
