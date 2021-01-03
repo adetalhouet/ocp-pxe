@@ -17,7 +17,6 @@ For this recipe, we will use the OpenStack CLI for most of the provisioning.
   - [Deploy Boostrap host](#bootstrap)
   - [Deploy Master hosts](#master)
   - [[Deploy Worker hosts](#worker)
-  
 
 ## Pre-requisites <a name="prerequisites"></a>
 You can adjust the below information as required.
