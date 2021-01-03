@@ -24,8 +24,8 @@ echo "net.ipv4.conf.default.rp_filter = 2" >> /etc/sysctl.conf
 echo "net.ipv4.conf.all.rp_filter = 2" >> /etc/sysctl.conf 
 echo 2 > /proc/sys/net/ipv4/conf/default/rp_filter
 echo 2 > /proc/sys/net/ipv4/conf/all/rp_filter
-systemctl start haproxy
-systemctl enable haproxy
+sudo systemctl start haproxy
+sudo systemctl enable haproxy
 
 ## Setup HTTP server
 yum -y install nginx

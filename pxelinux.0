@@ -9,15 +9,15 @@ MENU TITLE PXE BOOT MENU
 
 LABEL WORKER
   MENU LABEL ^1 WORKER
-  KERNEL http://192.168.1.125:8080/rhcos/rhcos-kernel
-  APPEND rd.neednet=1 initrd=http://192.168.1.125:8080/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125:8080/ignition/worker.ign coreos.live.rootfs_url=http://192.168.1.125:8080/rhcos/rhcos-live-rootfs ip=dhcp
+  KERNEL http://192.168.1.125/rhcos/rhcos-kernel
+  APPEND rd.neednet=1 initrd=http://192.168.1.125/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125/ignition/worker.ign coreos.live.rootfs_url=http://192.168.1.125/rhcos/rhcos-live-rootfs ip=dhcp
 
 LABEL MASTER
   MENU LABEL ^2 MASTER
-  KERNEL http://192.168.1.125:8080/rhcos/rhcos-kernel
-  APPEND rd.neednet=1 initrd=http://192.168.1.125:8080/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125:8080/ignition/master.ign coreos.live.rootfs_url=http://192.168.1.125:8080/rhcos/rhcos-live-rootfs ip=dhcp
+  KERNEL http://192.168.1.125/rhcos/rhcos-kernel
+  APPEND rd.neednet=1 initrd=http://192.168.1.125/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125/ignition/master.ign coreos.live.rootfs_url=http://192.168.1.125/rhcos/rhcos-live-rootfs ip=dhcp
 
 LABEL BOOTSTRAP
   MENU LABEL ^3 BOOTSTRAP
-  KERNEL http://192.168.1.125:8080/rhcos/rhcos-kernel
-  APPEND rd.neednet=1 initrd=http://192.168.1.125:8080/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125:8080/ignition/bootstrap.ign coreos.live.rootfs_url=http://192.168.1.125:8080/rhcos/rhcos-live-rootfs ip=dhcp
+  KERNEL http://192.168.1.125/rhcos/rhcos-kernel
+  APPEND rd.neednet=1 initrd=http://192.168.1.125/rhcos/rhcos-initramfs.img console=tty0,115200n8 coreos.inst=yes coreos.inst.install_dev=/dev/vda coreos.inst.ignition_url=http://192.168.1.125/ignition/bootstrap.ign coreos.live.rootfs_url=http://192.168.1.125/rhcos/rhcos-live-rootfs ip=dhcp

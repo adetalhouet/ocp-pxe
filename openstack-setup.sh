@@ -51,9 +51,9 @@ sed -i -e "s/WORKER0_MAC/$WORKER0_MAC/g" dnsmasq-pxe.conf
 sed -i -e "s/WORKER1_MAC/$WORKER1_MAC/g" dnsmasq-pxe.conf
 sed -i -e "s/WORKER2_MAC/$WORKER2_MAC/g" dnsmasq-pxe.conf
 
-# for i in {0..2}; do
-#     openstack server create --image pxeboot --flavor m1.openshift --key-name adetalhouet --port openshift.master-${i} master-${i}.$DNS_DOMAIN
-# done
+for i in {0..2}; do
+    openstack server create --image pxeboot --flavor m1.openshift --key-name adetalhouet --port openshift.master-${i} master-${i}
+done
 #
 # for i in {0..2}; do
 #     openstack server create --image pxeboot --flavor m1.openshift --key-name adetalhouet --port openshift.worker-${i} worker-${i}.$DNS_DOMAIN
