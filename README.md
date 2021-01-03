@@ -1,6 +1,6 @@
 credits to https://github.com/williamcaban/ocp4-lab
 
-# OpenShift in OpenStack using PXE
+# OpenShift in OpenStack using PXE Boot
 Below is the recipe to deploy an OpenShift cluster using PXE boot, for baremetal environment. But in this case, we will simulate baremetal with VM in OpenStack.
 For this recipe, we will use the OpenStack CLI for most of the provisioning.
 
@@ -568,6 +568,28 @@ Approve the Workers CSR
 You can monitor the installation progress using the following command
 ~~~
 ./openshift-install wait-for install-complete --dir=$WORKDIR/ --log-level debug
+DEBUG OpenShift Installer 4.6.9
+DEBUG Built from commit a48ad4a15b42102d1747d2f5f3b635deffb950b5
+DEBUG Loading Install Config...
+DEBUG   Loading SSH Key...
+DEBUG   Loading Base Domain...
+DEBUG     Loading Platform...
+DEBUG   Loading Cluster Name...
+DEBUG     Loading Base Domain...
+DEBUG     Loading Platform...
+DEBUG   Loading Pull Secret...
+DEBUG   Loading Platform...
+DEBUG Using Install Config loaded from state file
+INFO Waiting up to 40m0s for the cluster at https://api.ocp.adetalhouet.io:6443 to initialize...
+DEBUG Cluster is initialized
+INFO Waiting up to 10m0s for the openshift-console route to be created...
+DEBUG Route found in openshift-console namespace: console
+DEBUG Route found in openshift-console namespace: downloads
+DEBUG OpenShift console route is created
+INFO Install complete!
+INFO To access the cluster as the system:admin user when using 'oc', run 'export KUBECONFIG=/home/centos/ocp-pxe/auth/kubeconfig'
+INFO Access the OpenShift web-console here: https://console-openshift-console.apps.ocp.adetalhouet.io
+INFO Login to the console with user: "kubeadmin", and password: "HDyWo-Br5kQ-Lfhkz-hqoJK"
 ~~~
 ### Validate cluster status <a name="clusterstatus"></a>
 #### Node status
