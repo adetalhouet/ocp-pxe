@@ -1,8 +1,8 @@
+credits to https://github.com/williamcaban/ocp4-lab
+
 # OpenShift in OpenStack using PXE
 Below is the recipe to deploy an OpenShift cluster using PXE boot, for baremetal environment. But in this case, we will simulate baremetal with VM in OpenStack.
 For this recipe, we will use the OpenStack CLI for most of the provisioning.
-
-
 
 1. [Pre-requisites](#prerequisites)
 2. [Architecture](#architecture)
