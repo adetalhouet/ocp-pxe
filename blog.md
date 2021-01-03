@@ -1,4 +1,5 @@
 
+
 # OpenShift in OpenStack using PXE
 Below is the recipe to deploy an OpenShift cluster using PXE boot, for baremetal environment. But in this case, we will simulate baremetal with VM in OpenStack.
 For this recipe, we will use the OpenStack CLI for most of the provisioning.
@@ -42,19 +43,7 @@ The External network is used to assign a Floating IP to the Load Balancer acting
 		- If you don't have Designate, you could deploy a DNS solution, such as `dnsmasq` and achieve the same. Make sure to adjust the IP address where necessary.
 
 ## Overall architecture <a name="architecture"></a>
-![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/ocp-pxe-blog.png)
-
-### Hosts
-| Hosts | IP |
-|---------|:----:|
-| api-gw | 192.168.1.10 |
-| bootstrap | 192.168.1.20 |
-| master-0  | 192.168.1.100 |
-| master-1   | 192.168.1.101 |
-| master-2 | 192.168.1.102 |
-| worker-0  | 192.168.1.200 |
-| worker-1   | 192.168.1.201 |
-| worker-2 | 192.168.1.202 |
+![architecture](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/ocp-pxe-bog.png)
 ## Setup <a name="setup"></a>
 ### PXE Boot image <a name="pxebootimage"></a>
 Create a small empty disk file, create dos filesystem.
@@ -286,6 +275,7 @@ openstack server create --image centos8 --flavor m1.medium --key-name adetalhoue
 Login into the instance `$ ssh centos@10.195.197.102` and install dependencies.
 ~~~
 sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sudo yum -y install jq
 ~~~
 ##### Setup TFTP server
 This will be used to provide the default PXE configuration to the hosts when they boot.
@@ -543,9 +533,51 @@ done
 ~~~
 From the instance console, from the OpenStack UI, select `WORKER` option.
 ![pxeboot](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/pxeboot-worker.png)
-
+For the Worker nodes, there is a certificate signing process, which means we have to approve the issued CSR.
+To do so, first, export the `KUBECONFIG` to have CLI access to the cluster
+~~~
+export KUBECONFIG=$WORKDIR/auth/kubeconfig
+~~~
+Then, you can check the CSR, and their status. Below, you can see the Workers CSR are pending approval
+~~~
+$ ./oc get csr
+NAME        AGE     SIGNERNAME                                    REQUESTOR                                                                   CONDITION
+csr-c7wng   36m     kubernetes.io/kube-apiserver-client-kubelet   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-d7d95   94s     kubernetes.io/kubelet-serving                 system:node:worker-1                                                        Pending
+csr-hftq8   98s     kubernetes.io/kubelet-serving                 system:node:worker-2                                                        Pending
+csr-ljqbr   34m     kubernetes.io/kubelet-serving                 system:node:master-1                                                        Approved,Issued
+csr-md6rz   36m     kubernetes.io/kubelet-serving                 system:node:master-0                                                        Approved,Issued
+csr-q8lbc   96s     kubernetes.io/kubelet-serving                 system:node:worker-0                                                        Pending
+csr-t2qv2   34m     kubernetes.io/kubelet-serving                 system:node:master-2                                                        Approved,Issued
+~~~
+Approve the Workers CSR
+~~~
+./oc get csr -ojson | jq -r '.items[] | select(.status == {} ) | .metadata.name' | xargs ./oc adm certificate approve
+~~~
 You can monitor the installation progress using the following command
 ~~~
-./openshift-install wait-for bootstrap-complete --dir=$WORKDIR/ --log-level debug
+./openshift-install wait-for install-complete --dir=$WORKDIR/ --log-level debug
 ~~~
+### Validate cluster status <a name="clusterstatus"></a>
+#### Node status
+We can start by looking at the node status, from the Bastion host, they should all be in `Ready` state.
+~~~
+export KUBECONFIG=$WORKDIR/auth/kubeconfig
+./oc get nodes
+NAME       STATUS   ROLES    AGE     VERSION
+master-0   Ready    master   42m     v1.19.0+7070803
+master-1   Ready    master   40m     v1.19.0+7070803
+master-2   Ready    master   40m     v1.19.0+7070803
+worker-0   Ready    worker   7m45s   v1.19.0+7070803
+worker-1   Ready    worker   7m44s   v1.19.0+7070803
+worker-2   Ready    worker   7m48s   v1.19.0+7070803
+~~~
+#### Login into the console
+Navigate to `https://console-openshift-console.apps.ocp.adetalhouet.io/`
+Adjust the cluster and domain name to your environment, as follow `https://console-openshift-console.apps.CLUSTER_NAME.DOMAIN_NAME/`
 
+Get your `Kubeadmin` password using this command
+~~~
+ cat $WORKDIR/auth/kubeadmin-password
+ ~~~
+ ![ui](https://github.com/adetalhouet/ocp-pxe/raw/master/doc/ui.png)
